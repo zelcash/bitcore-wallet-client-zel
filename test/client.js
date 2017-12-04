@@ -15,10 +15,9 @@ var tingodb = require('tingodb')({
 
 var log = require('../lib/log');
 
-var Bitcore = require('bitcore-lib');
+var Bitcore = require('bitcore-lib-btcz');
 var Bitcore_ = {
-  btc: Bitcore,
-  bch: require('bitcore-lib-cash'),
+  btcz: Bitcore,
 };
 
 
@@ -38,11 +37,11 @@ var Errors = require('../lib/errors');
 
 var helpers = {};
 
-helpers.toSatoshi = function(btc) {
-  if (_.isArray(btc)) {
-    return _.map(btc, helpers.toSatoshi);
+helpers.toSatoshi = function(btcz) {
+  if (_.isArray(btcz)) {
+    return _.map(btcz, helpers.toSatoshi);
   } else {
-    return parseFloat((btc * 1e8).toPrecision(12));
+    return parseFloat((btcz * 1e8).toPrecision(12));
   }
 };
 
@@ -118,7 +117,7 @@ helpers.createAndJoinWallet = function(clients, m, n, opts, cb) {
 
   opts = opts || {};
 
-  var coin = opts.coin || 'btc';
+  var coin = opts.coin || 'btcz';
   var network = opts.network || 'testnet';
 
   clients[0].seedFromRandomWithMnemonic({
@@ -246,7 +245,7 @@ blockchainExplorerMock.getTransactions = function(addresses, from, to, cb) {
 };
 
 blockchainExplorerMock.getAddressActivity = function(address, cb) {
-  var activeAddresses = _.map(blockchainExplorerMock.utxos || [], 'address');
+  var activeAddresses = _.pluck(blockchainExplorerMock.utxos || [], 'address');
   return cb(null, _.includes(activeAddresses, address));
 };
 
@@ -924,7 +923,7 @@ describe('client API', function() {
         var signatures = Client.signTxp(txp, derivedPrivateKey['BIP44']);
         signatures.length.should.be.equal(utxos.length);
       });
-      it('should sign btc proposal correctly', function() {
+      it('should sign btcz proposal correctly', function() {
         var toAddress = 'msj42CCGruhRsFrGATiUuh25dtxYtnpbTx';
         var changeAddress = 'msj42CCGruhRsFrGATiUuh25dtxYtnpbTx';
 
@@ -1005,7 +1004,7 @@ describe('client API', function() {
         var walletId = Uuid.v4();
         var walletPrivKey = new Bitcore.PrivateKey();
         var network = i % 2 == 0 ? 'testnet' : 'livenet';
-        var coin = i % 3 == 0 ? 'bch' : 'btc';
+        var coin = i % 3 == 0 ? 'bch' : 'btcz';
         var secret = Client._buildSecret(walletId, walletPrivKey, coin, network);
         var result = Client.parseSecret(secret);
         result.walletId.should.equal(walletId);
@@ -1023,7 +1022,7 @@ describe('client API', function() {
     it('should create secret and parse secret from string', function() {
       var walletId = Uuid.v4();
       var walletPrivKey = new Bitcore.PrivateKey();
-      var coin = 'btc';
+      var coin = 'btcz';
       var network = 'testnet';
       var secret = Client._buildSecret(walletId, walletPrivKey.toString(), coin, network);
       var result = Client.parseSecret(secret);
@@ -1032,9 +1031,9 @@ describe('client API', function() {
       result.coin.should.equal(coin);
       result.network.should.equal(network);
     });
-    it('should default to btc for secrets not specifying coin', function() {
+    it('should default to btcz for secrets not specifying coin', function() {
       var result = Client.parseSecret('5ZN64RxKWCJXcy1pZwgrAzL1NnN5FQic5M2tLJVG5bEHaGXNRQs2uzJjMa9pMAbP5rz9Vu2xSaT');
-      result.coin.should.equal('btc');
+      result.coin.should.equal('btcz');
     });
   });
 
@@ -1054,7 +1053,7 @@ describe('client API', function() {
 
         var notifications = [];
         clients[0]._fetchLatestNotifications(5, function() {
-          _.map(notifications, 'type').should.deep.equal(['NewCopayer', 'WalletComplete']);
+          _.pluck(notifications, 'type').should.deep.equal(['NewCopayer', 'WalletComplete']);
           clock.tick(2000);
           notifications = [];
           clients[0]._fetchLatestNotifications(5, function() {
@@ -1063,7 +1062,7 @@ describe('client API', function() {
             clients[1].createAddress(function(err, x) {
               should.not.exist(err);
               clients[0]._fetchLatestNotifications(5, function() {
-                _.map(notifications, 'type').should.deep.equal(['NewAddress']);
+                _.pluck(notifications, 'type').should.deep.equal(['NewAddress']);
                 clock.tick(2000);
                 notifications = [];
                 clients[0]._fetchLatestNotifications(5, function() {
@@ -1207,7 +1206,7 @@ describe('client API', function() {
       });
     });
 
- 
+
 
     it('should check balance in a 1-1 ', function(done) {
       helpers.createAndJoinWallet(clients, 1, 1, function() {
@@ -1255,7 +1254,7 @@ describe('client API', function() {
           clients[0].openWallet(function(err, walletStatus) {
             should.not.exist(err);
             should.exist(walletStatus);
-            _.difference(_.map(walletStatus.copayers, 'name'), ['creator', 'guest']).length.should.equal(0);
+            _.difference(_.pluck(walletStatus.copayers, 'name'), ['creator', 'guest']).length.should.equal(0);
             if (++checks == 2) done();
           });
         });
@@ -1640,7 +1639,7 @@ describe('client API', function() {
         clients[0].getUtxos(opts, function(err, utxos) {
           should.not.exist(err);
           utxos.length.should.equal(2);
-          _.sumBy(utxos, 'satoshis').should.equal(2 * 1e8);
+          _.sum(utxos, 'satoshis').should.equal(2 * 1e8);
           done();
         });
       });
@@ -1648,17 +1647,17 @@ describe('client API', function() {
   });
 
   describe('Network fees', function() {
-    it('should get current fee levels for BTC', function(done) {
+    it('should get current fee levels for BTCZ', function(done) {
       blockchainExplorerMock.setFeeLevels({
         1: 40000,
         3: 20000,
         10: 18000,
       });
       clients[0].credentials = {};
-      clients[0].getFeeLevels('btc', 'livenet', function(err, levels) {
+      clients[0].getFeeLevels('btcz', 'livenet', function(err, levels) {
         should.not.exist(err);
         should.exist(levels);
-        _.difference(['priority', 'normal', 'economy'], _.map(levels, 'level')).should.be.empty;
+        _.difference(['priority', 'normal', 'economy'], _.pluck(levels, 'level')).should.be.empty;
         done();
       });
     });
@@ -2021,7 +2020,7 @@ describe('client API', function() {
       clients[0].getNotifications({}, function(err, notifications) {
         should.not.exist(err);
         notifications.length.should.equal(3);
-        _.map(notifications, 'type').should.deep.equal(['NewCopayer', 'WalletComplete', 'NewAddress']);
+        _.pluck(notifications, 'type').should.deep.equal(['NewCopayer', 'WalletComplete', 'NewAddress']);
         clients[0].getNotifications({
           lastNotificationId: _.last(notifications).id
         }, function(err, notifications) {
@@ -2043,13 +2042,13 @@ describe('client API', function() {
       clients[0].getNotifications({}, function(err, notifications) {
         should.not.exist(err);
         notifications.length.should.equal(3);
-        _.map(notifications, 'type').should.deep.equal(['NewCopayer', 'WalletComplete', 'NewAddress']);
+        _.pluck(notifications, 'type').should.deep.equal(['NewCopayer', 'WalletComplete', 'NewAddress']);
         clients[0].getNotifications({
           includeOwn: true,
         }, function(err, notifications) {
           should.not.exist(err);
           notifications.length.should.equal(5);
-          _.map(notifications, 'type').should.deep.equal(['NewCopayer', 'NewCopayer', 'WalletComplete', 'NewAddress', 'NewAddress']);
+          _.pluck(notifications, 'type').should.deep.equal(['NewCopayer', 'NewCopayer', 'WalletComplete', 'NewAddress', 'NewAddress']);
           done();
         });
       });
@@ -2100,10 +2099,10 @@ describe('client API', function() {
         txp.status.should.equal('temporary');
         txp.message.should.equal('hello');
         txp.outputs.length.should.equal(2);
-        _.sumBy(txp.outputs, 'amount').should.equal(3e8);
+        _.sum(txp.outputs, 'amount').should.equal(3e8);
         txp.outputs[0].message.should.equal('world');
-        _.uniqBy(txp.outputs, 'toAddress').length.should.equal(1);
-        _.uniq(_.map(txp.outputs, 'toAddress'))[0].should.equal(toAddress);
+        _.uniq(txp.outputs, 'toAddress').length.should.equal(1);
+        _.uniq(_.pluck(txp.outputs, 'toAddress'))[0].should.equal(toAddress);
         txp.hasUnconfirmedInputs.should.equal(false);
         txp.feeLevel.should.equal('normal');
         txp.feePerKb.should.equal(123e2);
@@ -2569,9 +2568,9 @@ describe('client API', function() {
       });
     };
 
-    describe('BTC', function(done) {
+    describe('BTCZ', function(done) {
       beforeEach(function(done) {
-        setup(2, 3, 'btc', 'testnet', done);
+        setup(2, 3, 'btcz', 'testnet', done);
       });
 
       it('Should sign proposal', function(done) {
@@ -3576,7 +3575,7 @@ describe('client API', function() {
             clients[0].getTxHistory(testCase.opts, function(err, txs) {
               should.not.exist(err);
               should.exist(txs);
-              var times = _.map(txs, 'time');
+              var times = _.pluck(txs, 'time');
               times.should.deep.equal(testCase.expected);
               next();
             });
@@ -3697,7 +3696,7 @@ describe('client API', function() {
           }, function(err, notes) {
             should.not.exist(err);
             notes.length.should.equal(2);
-            _.difference(_.map(notes, 'txid'), ['123', '456']).should.be.empty;
+            _.difference(_.pluck(notes, 'txid'), ['123', '456']).should.be.empty;
             next();
           });
         },
@@ -4148,7 +4147,7 @@ describe('client API', function() {
                   recoveryClient.getStatus({}, function(err, status) {
                     should.not.exist(err);
                     status.wallet.name.should.equal('mywallet');
-                    _.difference(_.map(status.wallet.copayers, 'name'), ['creator', 'copayer 1']).length.should.equal(0);
+                    _.difference(_.pluck(status.wallet.copayers, 'name'), ['creator', 'copayer 1']).length.should.equal(0);
                     recoveryClient.createAddress(function(err, addr2) {
                       should.not.exist(err);
                       should.exist(addr2);
@@ -4259,7 +4258,7 @@ describe('client API', function() {
                       should.not.exist(err);
                       recoveryClient.getStatus({}, function(err, status) {
                         should.not.exist(err);
-                        _.difference(_.map(status.wallet.copayers, 'name'), ['creator', 'copayer 1']).length.should.equal(0);
+                        _.difference(_.pluck(status.wallet.copayers, 'name'), ['creator', 'copayer 1']).length.should.equal(0);
                         recoveryClient.createAddress(function(err, addr2) {
                           should.not.exist(err);
                           should.exist(addr2);
@@ -4814,14 +4813,14 @@ describe('client API', function() {
             should.not.exist(err);
             recoveryClient.getStatus({}, function(err, status) {
               should.not.exist(err);
-              _.map(status.wallet.copayers, 'name').sort().should.deep.equal(['123', '234', '345']);
+              _.pluck(status.wallet.copayers, 'name').sort().should.deep.equal(['123', '234', '345']);
               var t2 = ImportData.copayers[1];
               var c2p = helpers.newClient(newApp);
               c2p.createWalletFromOldCopay(t2.username, t2.password, t2.ls[w], function(err) {
                 should.not.exist(err);
                 c2p.getStatus({}, function(err, status) {
                   should.not.exist(err);
-                  _.map(status.wallet.copayers, 'name').sort().should.deep.equal(['123', '234', '345']);
+                  _.pluck(status.wallet.copayers, 'name').sort().should.deep.equal(['123', '234', '345']);
                   done();
                 });
               });
@@ -5161,10 +5160,10 @@ describe('client API', function() {
   });
 
   var addrMap = {
-    btc: ['1PuKMvRFfwbLXyEPXZzkGi111gMUCs6uE3','1GG3JQikGC7wxstyavUBDoCJ66bWLLENZC'],
+    btcz: ['1PuKMvRFfwbLXyEPXZzkGi111gMUCs6uE3','1GG3JQikGC7wxstyavUBDoCJ66bWLLENZC'],
     bch: ['CfNCvxmKYzZsS78pDKKfrDd2doZt3w4jUs','CXivsT4p9F6Us1oQGfo6oJpKiDovJjRVUE']
   };
-  _.each(['bch', 'btc'], function(coin) {
+  _.each(['bch', 'btcz'], function(coin) {
     var addr= addrMap[coin];
 
     describe('Sweep paper wallet ' + coin, function() {
@@ -5208,7 +5207,7 @@ describe('client API', function() {
         };
         helpers.createAndJoinWallet(clients, 1, 1, function() {
           blockchainExplorerMock.setUtxo(address, 123, 1);
-          clients[0].buildTxFromPrivateKey('5KjBgBiadWGhjWmLN1v4kcEZqWSZFqzgv7cSUuZNJg4tD82c4xp', addr[1], { 
+          clients[0].buildTxFromPrivateKey('5KjBgBiadWGhjWmLN1v4kcEZqWSZFqzgv7cSUuZNJg4tD82c4xp', addr[1], {
             coin: coin
           }, function(err, tx) {
             should.not.exist(err);
@@ -5281,15 +5280,15 @@ describe('client API', function() {
         }],
         expected: '0.01',
       }, {
-        args: [1, 'btc'],
+        args: [1, 'btcz'],
         expected: '0.00',
       }, {
-        args: [1, 'btc', {
+        args: [1, 'btcz', {
           fullPrecision: true
         }],
         expected: '0.00000001',
       }, {
-        args: [1234567899999, 'btc', {
+        args: [1234567899999, 'btcz', {
           thousandsSeparator: ' ',
           decimalSeparator: ','
         }],
