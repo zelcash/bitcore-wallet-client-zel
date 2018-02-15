@@ -45,7 +45,7 @@ client.createWallet("My Wallet", "Irene", 2, 2, {network: 'testnet'}, function(e
     return
   };
   // Handle err
-  console.log('Wallet Created. Share this secret with your copayers: ' + secret);
+  console.log('Wallet Created. Share this secret with your zelers: ' + secret);
   fs.writeFileSync('irene.dat', client.export());
 });
 ```
@@ -115,7 +115,7 @@ Create a new wallet with the first script:
 ```
 $ node irene.js
 info Generating new keys
- Wallet Created. Share this secret with your copayers: JbTDjtUkvWS4c3mgAtJf4zKyRGzdQzZacfx2S7gRqPLcbeAWaSDEnazFJF6mKbzBvY1ZRwZCbvT
+ Wallet Created. Share this secret with your zelers: JbTDjtUkvWS4c3mgAtJf4zKyRGzdQzZacfx2S7gRqPLcbeAWaSDEnazFJF6mKbzBvY1ZRwZCbvT
 ```
 
 Join to this wallet with generated secret:

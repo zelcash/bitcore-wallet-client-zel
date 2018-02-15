@@ -15,7 +15,7 @@ describe('Credentials', function() {
     it('Should create', function() {
       var c = Credentials.create('ZEL', 'livenet');
       should.exist(c.xPrivKey);
-      should.exist(c.copayerId);
+      should.exist(c.zelerId);
     });
 
     it('Should create random credentials', function() {
@@ -98,7 +98,7 @@ describe('Credentials', function() {
 
       c.xPrivKey.should.equal('xprv9s21ZrQH143K2TjT3rF4m5AJcMvCetfQbVjFEx1Rped8qzcMJwbqxv21k3ftL69z7n3gqvvHthkdzbW14gxEFDYQdrRQMub3XdkJyt3GGGc');
       c.xPubKey.should.equal('xpub6DUean44k773kxbUq8QpSmAPFaNCpk5AzrxbFRAMsNCZBGD15XQVnRJCgNd8GtJVmDyDZh89NPZz1XPQeX5w6bAdLGfSTUuPDEQwBgKxfh1');
-      c.copayerId.should.equal('bad66ef88ad8dec08e36d576c29b4f091d30197f04e166871e64bf969d08a958');
+      c.zelerId.should.equal('bad66ef88ad8dec08e36d576c29b4f091d30197f04e166871e64bf969d08a958');
       c.network.should.equal('livenet');
       c.personalEncryptingKey.should.equal('M4MTmfRZaTtX6izAAxTpJg==');
       should.not.exist(c.walletPrivKey);
