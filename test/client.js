@@ -17,7 +17,7 @@ var log = require('../lib/log');
 
 var Bitcore = require('bitcore-lib-zel');
 var Bitcore_ = {
-  zel: Bitcore,
+  ZEL: Bitcore,
 };
 
 
@@ -37,11 +37,11 @@ var Errors = require('../lib/errors');
 
 var helpers = {};
 
-helpers.toSatoshi = function(zel) {
-  if (_.isArray(zel)) {
-    return _.map(zel, helpers.toSatoshi);
+helpers.toSatoshi = function(ZEL) {
+  if (_.isArray(ZEL)) {
+    return _.map(ZEL, helpers.toSatoshi);
   } else {
-    return parseFloat((zel * 1e8).toPrecision(12));
+    return parseFloat((ZEL * 1e8).toPrecision(12));
   }
 };
 
@@ -117,7 +117,7 @@ helpers.createAndJoinWallet = function(clients, m, n, opts, cb) {
 
   opts = opts || {};
 
-  var coin = opts.coin || 'zel';
+  var coin = opts.coin || 'ZEL';
   var network = opts.network || 'testnet';
 
   clients[0].seedFromRandomWithMnemonic({
@@ -1004,7 +1004,7 @@ describe('client API', function() {
         var walletId = Uuid.v4();
         var walletPrivKey = new Bitcore.PrivateKey();
         var network = i % 2 == 0 ? 'testnet' : 'livenet';
-        var coin = i % 3 == 0 ? 'bch' : 'zel';
+        var coin = i % 3 == 0 ? 'bch' : 'ZEL';
         var secret = Client._buildSecret(walletId, walletPrivKey, coin, network);
         var result = Client.parseSecret(secret);
         result.walletId.should.equal(walletId);
@@ -1022,7 +1022,7 @@ describe('client API', function() {
     it('should create secret and parse secret from string', function() {
       var walletId = Uuid.v4();
       var walletPrivKey = new Bitcore.PrivateKey();
-      var coin = 'zel';
+      var coin = 'ZEL';
       var network = 'testnet';
       var secret = Client._buildSecret(walletId, walletPrivKey.toString(), coin, network);
       var result = Client.parseSecret(secret);
@@ -1033,7 +1033,7 @@ describe('client API', function() {
     });
     it('should default to zel for secrets not specifying coin', function() {
       var result = Client.parseSecret('5ZN64RxKWCJXcy1pZwgrAzL1NnN5FQic5M2tLJVG5bEHaGXNRQs2uzJjMa9pMAbP5rz9Vu2xSaT');
-      result.coin.should.equal('zel');
+      result.coin.should.equal('ZEL');
     });
   });
 
@@ -1654,7 +1654,7 @@ describe('client API', function() {
         10: 18000,
       });
       clients[0].credentials = {};
-      clients[0].getFeeLevels('zel', 'livenet', function(err, levels) {
+      clients[0].getFeeLevels('ZEL', 'livenet', function(err, levels) {
         should.not.exist(err);
         should.exist(levels);
         _.difference(['priority', 'normal', 'economy'], _.map(levels, 'level')).should.be.empty;
@@ -2570,7 +2570,7 @@ describe('client API', function() {
 
     describe('ZEL', function(done) {
       beforeEach(function(done) {
-        setup(2, 3, 'zel', 'testnet', done);
+        setup(2, 3, 'ZEL', 'testnet', done);
       });
 
       it('Should sign proposal', function(done) {
@@ -5160,10 +5160,10 @@ describe('client API', function() {
   });
 
   var addrMap = {
-    zel: ['1PuKMvRFfwbLXyEPXZzkGi111gMUCs6uE3','1GG3JQikGC7wxstyavUBDoCJ66bWLLENZC'],
+    ZEL: ['1PuKMvRFfwbLXyEPXZzkGi111gMUCs6uE3','1GG3JQikGC7wxstyavUBDoCJ66bWLLENZC'],
     bch: ['CfNCvxmKYzZsS78pDKKfrDd2doZt3w4jUs','CXivsT4p9F6Us1oQGfo6oJpKiDovJjRVUE']
   };
-  _.each(['bch', 'zel'], function(coin) {
+  _.each(['bch', 'ZEL'], function(coin) {
     var addr= addrMap[coin];
 
     describe('Sweep paper wallet ' + coin, function() {
@@ -5280,15 +5280,15 @@ describe('client API', function() {
         }],
         expected: '0.01',
       }, {
-        args: [1, 'zel'],
+        args: [1, 'ZEL'],
         expected: '0.00',
       }, {
-        args: [1, 'zel', {
+        args: [1, 'ZEL', {
           fullPrecision: true
         }],
         expected: '0.00000001',
       }, {
-        args: [1234567899999, 'zel', {
+        args: [1234567899999, 'ZEL', {
           thousandsSeparator: ' ',
           decimalSeparator: ','
         }],

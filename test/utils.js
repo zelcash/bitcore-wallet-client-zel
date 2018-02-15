@@ -58,19 +58,19 @@ describe('Utils', function() {
         args: [1, 'bit'],
         expected: '0',
       }, {
-        args: [1, 'zel'],
+        args: [1, 'ZEL'],
         expected: '0.00',
       }, {
-        args: [400050000, 'zel'],
+        args: [400050000, 'ZEL'],
         expected: '4.0005',
       }, {
-        args: [400000000, 'zel'],
+        args: [400000000, 'ZEL'],
         expected: '4.00',
       }, {
-        args: [49999, 'zel'],
+        args: [49999, 'ZEL'],
         expected: '0.000499',
       }, {
-        args: [100000000, 'zel'],
+        args: [100000000, 'ZEL'],
         expected: '1.00',
       }, {
         args: [0, 'bit'],
@@ -79,19 +79,19 @@ describe('Utils', function() {
         args: [12345678, 'bit'],
         expected: '123,456',
       }, {
-        args: [12345678, 'zel'],
+        args: [12345678, 'ZEL'],
         expected: '0.123456',
       }, {
-        args: [12345611, 'zel'],
+        args: [12345611, 'ZEL'],
         expected: '0.123456',
       }, {
-        args: [1234, 'zel'],
+        args: [1234, 'ZEL'],
         expected: '0.000012',
       }, {
-        args: [1299, 'zel'],
+        args: [1299, 'ZEL'],
         expected: '0.000012',
       }, {
-        args: [1234567899999, 'zel'],
+        args: [1234567899999, 'ZEL'],
         expected: '12,345.678999',
       }, {
         args: [12345678, 'bit', {
@@ -99,12 +99,12 @@ describe('Utils', function() {
         }],
         expected: '123.456',
       }, {
-        args: [12345678, 'zel', {
+        args: [12345678, 'ZEL', {
           decimalSeparator: ','
         }],
         expected: '0,123456',
       }, {
-        args: [1234567899999, 'zel', {
+        args: [1234567899999, 'ZEL', {
           thousandsSeparator: ' ',
           decimalSeparator: ','
         }],
@@ -120,7 +120,7 @@ describe('Utils', function() {
         args: [1, 'bit'],
         expected: '0.01',
       }, {
-        args: [1, 'zel'],
+        args: [1, 'ZEL'],
         expected: '0.00000001',
       }, {
         args: [0, 'bit'],
@@ -129,22 +129,22 @@ describe('Utils', function() {
         args: [12345678, 'bit'],
         expected: '123,456.78',
       }, {
-        args: [12345678, 'zel'],
+        args: [12345678, 'ZEL'],
         expected: '0.12345678',
       }, {
-        args: [1234567, 'zel'],
+        args: [1234567, 'ZEL'],
         expected: '0.01234567',
       }, {
-        args: [12345611, 'zel'],
+        args: [12345611, 'ZEL'],
         expected: '0.12345611',
       }, {
-        args: [1234, 'zel'],
+        args: [1234, 'ZEL'],
         expected: '0.00001234',
       }, {
-        args: [1299, 'zel'],
+        args: [1299, 'ZEL'],
         expected: '0.00001299',
       }, {
-        args: [1234567899999, 'zel'],
+        args: [1234567899999, 'ZEL'],
         expected: '12,345.67899999',
       }, {
         args: [12345678, 'bit', {
@@ -152,12 +152,12 @@ describe('Utils', function() {
         }],
         expected: "123'456.78",
       }, {
-        args: [12345678, 'zel', {
+        args: [12345678, 'ZEL', {
           decimalSeparator: ','
         }],
         expected: '0,12345678',
       }, {
-        args: [1234567899999, 'zel', {
+        args: [1234567899999, 'ZEL', {
           thousandsSeparator: ' ',
           decimalSeparator: ','
         }],
