@@ -2,11 +2,11 @@
   "name": "bitcore-wallet-client-zel",
   "description": "Client for bitcore-wallet-service-zel",
   "author": "Zelcash Foundation",
-  "version": "1.0.4",
+  "version": "1.0.3",
   "license": "MIT",
   "keywords": [
     "bitcoin",
-    "zel",
+    "copay",
     "multisig",
     "wallet",
     "client",
@@ -36,7 +36,7 @@
     "superagent": "^3.4.1"
   },
   "devDependencies": {
-    "bitcore-wallet-service-zel": "git+https://github.com/Lumiboy/bitcore-wallet-client-zel.git",
+    "bitcore-wallet-service-zel": "git+https://github.com/Lumiboy/bitcore-wallet-service-zel.git",
     "browserify": "^13.1.0",
     "chai": "^1.9.1",
     "coveralls": "^2.11.2",

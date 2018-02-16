@@ -17,7 +17,7 @@ var log = require('../lib/log');
 
 var Bitcore = require('bitcore-lib-zel');
 var Bitcore_ = {
-  ZEL: Bitcore,
+  zel: Bitcore,
 };
 
 
@@ -37,11 +37,11 @@ var Errors = require('../lib/errors');
 
 var helpers = {};
 
-helpers.toSatoshi = function(ZEL) {
-  if (_.isArray(ZEL)) {
-    return _.map(ZEL, helpers.toSatoshi);
+helpers.toSatoshi = function(zel) {
+  if (_.isArray(zel)) {
+    return _.map(zel, helpers.toSatoshi);
   } else {
-    return parseFloat((ZEL * 1e8).toPrecision(12));
+    return parseFloat((zel * 1e8).toPrecision(12));
   }
 };
 
@@ -117,7 +117,7 @@ helpers.createAndJoinWallet = function(clients, m, n, opts, cb) {
 
   opts = opts || {};
 
-  var coin = opts.coin || 'ZEL';
+  var coin = opts.coin || 'zel';
   var network = opts.network || 'testnet';
 
   clients[0].seedFromRandomWithMnemonic({
@@ -143,7 +143,7 @@ helpers.createAndJoinWallet = function(clients, m, n, opts, cb) {
               coin: coin,
               network: network
             });
-            clients[i].joinWallet(secret, 'zeler ' + i, {
+            clients[i].joinWallet(secret, 'copayer ' + i, {
               coin: coin
             }, cb);
           }, next);
@@ -1004,7 +1004,7 @@ describe('client API', function() {
         var walletId = Uuid.v4();
         var walletPrivKey = new Bitcore.PrivateKey();
         var network = i % 2 == 0 ? 'testnet' : 'livenet';
-        var coin = i % 3 == 0 ? 'bch' : 'ZEL';
+        var coin = i % 3 == 0 ? 'bch' : 'zel';
         var secret = Client._buildSecret(walletId, walletPrivKey, coin, network);
         var result = Client.parseSecret(secret);
         result.walletId.should.equal(walletId);
@@ -1022,7 +1022,7 @@ describe('client API', function() {
     it('should create secret and parse secret from string', function() {
       var walletId = Uuid.v4();
       var walletPrivKey = new Bitcore.PrivateKey();
-      var coin = 'ZEL';
+      var coin = 'zel';
       var network = 'testnet';
       var secret = Client._buildSecret(walletId, walletPrivKey.toString(), coin, network);
       var result = Client.parseSecret(secret);
@@ -1033,7 +1033,7 @@ describe('client API', function() {
     });
     it('should default to zel for secrets not specifying coin', function() {
       var result = Client.parseSecret('5ZN64RxKWCJXcy1pZwgrAzL1NnN5FQic5M2tLJVG5bEHaGXNRQs2uzJjMa9pMAbP5rz9Vu2xSaT');
-      result.coin.should.equal('ZEL');
+      result.coin.should.equal('zel');
     });
   });
 
@@ -1110,18 +1110,18 @@ describe('client API', function() {
         })
       });
     });
-    it('should encrypt zeler name in wallet creation', function(done) {
+    it('should encrypt copayer name in wallet creation', function(done) {
       var spy = sinon.spy(clients[0], '_doPostRequest');
       clients[0].seedFromRandomWithMnemonic();
       clients[0].createWallet('mywallet', 'pepe', 1, 1, {}, function(err, secret) {
         should.not.exist(err);
         var url = spy.getCall(1).args[0];
         var body = JSON.stringify(spy.getCall(1).args[1]);
-        url.should.contain('/zelers');
+        url.should.contain('/copayers');
         body.should.not.contain('pepe');
         clients[0].getStatus({}, function(err, status) {
           should.not.exist(err);
-          status.wallet.zelers[0].name.should.equal('pepe');
+          status.wallet.copayers[0].name.should.equal('pepe');
           done();
         })
       });
@@ -1151,8 +1151,8 @@ describe('client API', function() {
           }), c.personalEncryptingKey),
         };
         var hash = Utils.getCopayerHash(args.name, args.xPubKey, args.requestPubKey);
-        args.zelerSignature = Utils.signMessage(hash, wpk);
-        clients[0]._doPostRequest('/v2/wallets/123/zelers', args, function(err, wallet) {
+        args.copayerSignature = Utils.signMessage(hash, wpk);
+        clients[0]._doPostRequest('/v2/wallets/123/copayers', args, function(err, wallet) {
           should.not.exist(err);
           clients[0].openWallet(function(err) {
             should.not.exist(err);
@@ -1161,8 +1161,8 @@ describe('client API', function() {
               var wallet = status.wallet;
               wallet.name.should.equal('mywallet');
               should.not.exist(wallet.encryptedName);
-              wallet.zelers[0].name.should.equal('pepe');
-              should.not.exist(wallet.zelers[0].encryptedName);
+              wallet.copayers[0].name.should.equal('pepe');
+              should.not.exist(wallet.copayers[0].encryptedName);
               done();
             });
           });
@@ -1219,7 +1219,7 @@ describe('client API', function() {
         })
       });
     });
-    it('should be able to complete wallet in zeler that joined later', function(done) {
+    it('should be able to complete wallet in copayer that joined later', function(done) {
       helpers.createAndJoinWallet(clients, 2, 3, function() {
         clients[0].getBalance({}, function(err, x) {
           should.not.exist(err);
@@ -1254,7 +1254,7 @@ describe('client API', function() {
           clients[0].openWallet(function(err, walletStatus) {
             should.not.exist(err);
             should.exist(walletStatus);
-            _.difference(_.map(walletStatus.zelers, 'name'), ['creator', 'guest']).length.should.equal(0);
+            _.difference(_.map(walletStatus.copayers, 'name'), ['creator', 'guest']).length.should.equal(0);
             if (++checks == 2) done();
           });
         });
@@ -1284,8 +1284,8 @@ describe('client API', function() {
         clients[1].joinWallet(secret, 'guest', {}, function(err, wallet) {
           should.not.exist(err);
           wallet.name.should.equal('mywallet');
-          wallet.zelers[0].name.should.equal('creator');
-          wallet.zelers[1].name.should.equal('guest');
+          wallet.copayers[0].name.should.equal('creator');
+          wallet.copayers[1].name.should.equal('guest');
           done();
         });
       });
@@ -1307,7 +1307,7 @@ describe('client API', function() {
     it('should not allow to join a full wallet ', function(done) {
       helpers.createAndJoinWallet(clients, 2, 2, function(w) {
         should.exist(w.secret);
-        clients[4].joinWallet(w.secret, 'zeler', {}, function(err, result) {
+        clients[4].joinWallet(w.secret, 'copayer', {}, function(err, result) {
           err.should.be.an.instanceOf(Errors.WALLET_FULL);
           done();
         });
@@ -1315,10 +1315,10 @@ describe('client API', function() {
     });
     it('should fail with an invalid secret', function(done) {
       // Invalid
-      clients[0].joinWallet('dummy', 'zeler', {}, function(err, result) {
+      clients[0].joinWallet('dummy', 'copayer', {}, function(err, result) {
         err.message.should.contain('Invalid secret');
         // Right length, invalid char for base 58
-        clients[0].joinWallet('DsZbqNQQ9LrTKU8EknR7gFKyCQMPg2UUHNPZ1BzM5EbJwjRZaUNBfNtdWLluuFc0f7f7sTCkh7T', 'zeler', {}, function(err, result) {
+        clients[0].joinWallet('DsZbqNQQ9LrTKU8EknR7gFKyCQMPg2UUHNPZ1BzM5EbJwjRZaUNBfNtdWLluuFc0f7f7sTCkh7T', 'copayer', {}, function(err, result) {
           err.message.should.contain('Invalid secret');
           done();
         });
@@ -1327,7 +1327,7 @@ describe('client API', function() {
     it('should fail with an unknown secret', function(done) {
       // Unknown walletId
       var oldSecret = '3bJKRn1HkQTpwhVaJMaJ22KwsjN24ML9uKfkSrP7iDuq91vSsTEygfGMMpo6kWLp1pXG9wZSKcT';
-      clients[0].joinWallet(oldSecret, 'zeler', {}, function(err, result) {
+      clients[0].joinWallet(oldSecret, 'copayer', {}, function(err, result) {
         err.should.be.an.instanceOf(Errors.WALLET_NOT_FOUND);
         done();
       });
@@ -1339,7 +1339,7 @@ describe('client API', function() {
 
       helpers.createAndJoinWallet(clients, 2, 3, function() {
         helpers.tamperResponse([clients[0], clients[1]], 'get', '/v1/wallets/', {}, function(status) {
-          status.wallet.zelers[0].xPubKey = status.wallet.zelers[1].xPubKey;
+          status.wallet.copayers[0].xPubKey = status.wallet.copayers[1].xPubKey;
         }, function() {
           openWalletStub.restore();
           clients[1].openWallet(function(err, x) {
@@ -1356,7 +1356,7 @@ describe('client API', function() {
 
       helpers.createAndJoinWallet(clients, 2, 3, function() {
         helpers.tamperResponse([clients[0], clients[1]], 'get', '/v1/wallets/', {}, function(status) {
-          delete status.wallet.zelers[1].xPubKey;
+          delete status.wallet.copayers[1].xPubKey;
         }, function() {
           openWalletStub.restore();
           clients[1].openWallet(function(err, x) {
@@ -1374,10 +1374,10 @@ describe('client API', function() {
       helpers.createAndJoinWallet(clients, 2, 3, function() {
         helpers.tamperResponse([clients[0], clients[1]], 'get', '/v1/wallets/', {}, function(status) {
           // Replace caller's pubkey
-          status.wallet.zelers[1].xPubKey = (new Bitcore.HDPrivateKey()).publicKey;
+          status.wallet.copayers[1].xPubKey = (new Bitcore.HDPrivateKey()).publicKey;
           // Add a correct signature
-          status.wallet.zelers[1].xPubKeySignature = Utils.signMessage(
-            status.wallet.zelers[1].xPubKey.toString(),
+          status.wallet.copayers[1].xPubKeySignature = Utils.signMessage(
+            status.wallet.copayers[1].xPubKey.toString(),
             clients[0].credentials.walletPrivKey
           );
         }, function() {
@@ -1399,7 +1399,7 @@ describe('client API', function() {
           should.not.exist(err);
           should.exist(wallet);
           wallet.status.should.equal('pending');
-          wallet.zelers.length.should.equal(1);
+          wallet.copayers.length.should.equal(1);
           done();
         });
       });
@@ -1654,7 +1654,7 @@ describe('client API', function() {
         10: 18000,
       });
       clients[0].credentials = {};
-      clients[0].getFeeLevels('ZEL', 'livenet', function(err, levels) {
+      clients[0].getFeeLevels('zel', 'livenet', function(err, levels) {
         should.not.exist(err);
         should.exist(levels);
         _.difference(['priority', 'normal', 'economy'], _.map(levels, 'level')).should.be.empty;
@@ -1901,7 +1901,7 @@ describe('client API', function() {
         });
       });
     });
-    it('should be able to create address in all zelers in a 2-3 wallet', function(done) {
+    it('should be able to create address in all copayers in a 2-3 wallet', function(done) {
       this.timeout(5000);
       helpers.createAndJoinWallet(clients, 2, 3, function() {
         clients[0].createAddress(function(err, x) {
@@ -2128,7 +2128,7 @@ describe('client API', function() {
               should.exist(x.proposalSignature);
               should.not.exist(x.proposalSignaturePubKey);
               should.not.exist(x.proposalSignaturePubKeySig);
-              // Should be visible for other zelers as well
+              // Should be visible for other copayers as well
               clients[1].getTxProposals({}, function(err, txps) {
                 should.not.exist(err);
                 txps.length.should.equal(1);
@@ -2180,7 +2180,7 @@ describe('client API', function() {
           clients[0].getTxProposals({}, function(err, txps) {
             should.not.exist(err);
             txps.length.should.equal(1);
-            // Try to republish from zeler 1
+            // Try to republish from copayer 1
             clients[1].createTxProposal(opts, function(err, txp) {
               should.not.exist(err);
               should.exist(txp);
@@ -2440,7 +2440,7 @@ describe('client API', function() {
           clients[2].getTxProposals({}, function(err, txs) {
             should.not.exist(err);
             txs[0].message.should.equal('some message');
-            txs[0].actions[0].zelerName.should.equal('zeler 1');
+            txs[0].actions[0].copayerName.should.equal('copayer 1');
             txs[0].actions[0].comment.should.equal('rejection comment');
             done();
           });
@@ -2570,7 +2570,7 @@ describe('client API', function() {
 
     describe('ZEL', function(done) {
       beforeEach(function(done) {
-        setup(2, 3, 'ZEL', 'testnet', done);
+        setup(2, 3, 'zel', 'testnet', done);
       });
 
       it('Should sign proposal', function(done) {
@@ -2810,7 +2810,7 @@ describe('client API', function() {
         });
       });
 
-      it('Should send the "payment message" when last zeler sign', function(done) {
+      it('Should send the "payment message" when last copayer sign', function(done) {
         clients[0].getTxProposals({}, function(err, txps) {
           should.not.exist(err);
           clients[0].signTxProposal(txps[0], function(err, xx, paypro) {
@@ -3253,7 +3253,7 @@ describe('client API', function() {
               txp.requiredRejections.should.equal(2);
               txp.requiredSignatures.should.equal(2);
               var w = st.wallet;
-              w.zelers.length.should.equal(3);
+              w.copayers.length.should.equal(3);
               w.status.should.equal('complete');
               var b = st.balance;
               b.totalAmount.should.equal(1000000000);
@@ -3277,7 +3277,7 @@ describe('client API', function() {
       });
     });
 
-    it.skip('Send, reject actions in 2-3 wallet must have correct zelerNames', function(done) {
+    it.skip('Send, reject actions in 2-3 wallet must have correct copayerNames', function(done) {
       helpers.createAndJoinWallet(clients, 2, 3, function(w) {
         clients[0].createAddress(function(err, x0) {
           should.not.exist(err);
@@ -3530,7 +3530,7 @@ describe('client API', function() {
             var note = decorated.note;
             should.exist(note);
             note.body.should.equal('just a note');
-            note.editedByName.should.equal('zeler 1');
+            note.editedByName.should.equal('copayer 1');
             next();
           });
         }
@@ -3608,8 +3608,8 @@ describe('client API', function() {
           note.txid.should.equal('123');
           note.walletId.should.equal(clients[0].credentials.walletId);
           note.body.should.equal('note body');
-          note.editedBy.should.equal(clients[0].credentials.zelerId);
-          note.editedByName.should.equal(clients[0].credentials.zelerName);
+          note.editedBy.should.equal(clients[0].credentials.copayerId);
+          note.editedByName.should.equal(clients[0].credentials.copayerName);
           note.createdOn.should.equal(note.editedOn);
           done();
         });
@@ -3631,7 +3631,7 @@ describe('client API', function() {
       });
     });
 
-    it('should share notes between zelers', function(done) {
+    it('should share notes between copayers', function(done) {
       clients[0].editTxNote({
         txid: '123',
         body: 'note body'
@@ -3642,7 +3642,7 @@ describe('client API', function() {
         }, function(err, note) {
           should.not.exist(err);
           should.exist(note);
-          note.editedBy.should.equal(clients[0].credentials.zelerId);
+          note.editedBy.should.equal(clients[0].credentials.copayerId);
           var creator = note.editedBy;
           clients[1].getTxNote({
             txid: '123',
@@ -3836,7 +3836,7 @@ describe('client API', function() {
           var c = clients[0].credentials;
           var walletId = c.walletId;
           var walletName = c.walletName;
-          var zelerName = c.zelerName;
+          var copayerName = c.copayerName;
           var key = c.xPrivKey;
 
           var exported = clients[0].getMnemonic();
@@ -3849,7 +3849,7 @@ describe('client API', function() {
             should.not.exist(err);
             c2.walletId.should.equal(walletId);
             c2.walletName.should.equal(walletName);
-            c2.zelerName.should.equal(zelerName);
+            c2.copayerName.should.equal(copayerName);
             done();
           });
         });
@@ -3858,7 +3858,7 @@ describe('client API', function() {
           var c = clients[0].credentials;
           var walletId = c.walletId;
           var walletName = c.walletName;
-          var zelerName = c.zelerName;
+          var copayerName = c.copayerName;
           var network = c.network;
           var key = c.xPrivKey;
 
@@ -3870,7 +3870,7 @@ describe('client API', function() {
             should.not.exist(err);
             c2.walletId.should.equal(walletId);
             c2.walletName.should.equal(walletName);
-            c2.zelerName.should.equal(zelerName);
+            c2.copayerName.should.equal(copayerName);
             done();
           });
         });
@@ -4011,7 +4011,7 @@ describe('client API', function() {
             c2.personalEncryptingKey.should.equal(c.personalEncryptingKey);
             c2.walletId.should.equal(c.walletId);
             c2.walletName.should.equal(c.walletName);
-            c2.zelerName.should.equal(c.zelerName);
+            c2.copayerName.should.equal(c.copayerName);
             done();
           });
         });
@@ -4049,7 +4049,7 @@ describe('client API', function() {
         helpers.createAndJoinWallet(clients, 1, 1, function() {
           var xpriv = clients[0].credentials.xPrivKey;
           var walletName = clients[0].credentials.walletName;
-          var zelerName = clients[0].credentials.zelerName;
+          var copayerName = clients[0].credentials.copayerName;
 
           clients[0].createAddress(function(err, addr) {
             should.not.exist(err);
@@ -4060,7 +4060,7 @@ describe('client API', function() {
             recoveryClient.openWallet(function(err) {
               should.not.exist(err);
               recoveryClient.credentials.walletName.should.equal(walletName);
-              recoveryClient.credentials.zelerName.should.equal(zelerName);
+              recoveryClient.credentials.copayerName.should.equal(copayerName);
               recoveryClient.getMainAddresses({}, function(err, list) {
                 should.not.exist(err);
                 should.exist(list);
@@ -4133,21 +4133,21 @@ describe('client API', function() {
                 recoveryClient.recreateWallet(function(err) {
                   should.not.exist(err);
 
-                  // Do not send wallet name and zeler names in clear text
+                  // Do not send wallet name and copayer names in clear text
                   var url = spy.getCall(0).args[0];
                   var body = JSON.stringify(spy.getCall(0).args[1]);
                   url.should.contain('/wallets');
                   body.should.not.contain('mywallet');
                   var url = spy.getCall(1).args[0];
                   var body = JSON.stringify(spy.getCall(1).args[1]);
-                  url.should.contain('/zelers');
+                  url.should.contain('/copayers');
                   body.should.not.contain('creator');
-                  body.should.not.contain('zeler 1');
+                  body.should.not.contain('copayer 1');
 
                   recoveryClient.getStatus({}, function(err, status) {
                     should.not.exist(err);
                     status.wallet.name.should.equal('mywallet');
-                    _.difference(_.map(status.wallet.zelers, 'name'), ['creator', 'zeler 1']).length.should.equal(0);
+                    _.difference(_.map(status.wallet.copayers, 'name'), ['creator', 'copayer 1']).length.should.equal(0);
                     recoveryClient.createAddress(function(err, addr2) {
                       should.not.exist(err);
                       should.exist(addr2);
@@ -4258,7 +4258,7 @@ describe('client API', function() {
                       should.not.exist(err);
                       recoveryClient.getStatus({}, function(err, status) {
                         should.not.exist(err);
-                        _.difference(_.map(status.wallet.zelers, 'name'), ['creator', 'zeler 1']).length.should.equal(0);
+                        _.difference(_.map(status.wallet.copayers, 'name'), ['creator', 'copayer 1']).length.should.equal(0);
                         recoveryClient.createAddress(function(err, addr2) {
                           should.not.exist(err);
                           should.exist(addr2);
@@ -4629,7 +4629,7 @@ describe('client API', function() {
 
   describe('Legacy Copay Import', function() {
     it('Should get wallets from profile', function(done) {
-      var t = ImportData.zelers[0];
+      var t = ImportData.copayers[0];
       var c = helpers.newClient(app);
       var ids = c.getWalletIdsFromOldCopay(t.username, t.password, t.ls['profile::4872dd8b2ceaa54f922e8e6ba6a8eaa77b488721']);
       ids.should.deep.equal([
@@ -4641,7 +4641,7 @@ describe('client API', function() {
       done();
     });
     it('Should import a 1-1 wallet', function(done) {
-      var t = ImportData.zelers[0];
+      var t = ImportData.copayers[0];
       var c = helpers.newClient(app);
       c.createWalletFromOldCopay(t.username, t.password, t.ls['wallet::e2c2d72024979ded'], function(err) {
         should.not.exist(err);
@@ -4650,7 +4650,7 @@ describe('client API', function() {
 
         c.createAddress(function(err, x0) {
           // This is the first 'shared' address, created automatically
-          // by old zel
+          // by old copay
           x0.address.should.equal('2N3w8sJUyAXCQirqNsTayWr7pWADFNdncmf');
           c.getStatus({}, function(err, status) {
             should.not.exist(err);
@@ -4659,8 +4659,8 @@ describe('client API', function() {
             c.credentials.walletId.should.equal('e2c2d72024979ded');
             c.credentials.walletPrivKey.should.equal('c3463113c6e1d0fc2f2bd520f7d9d62f8e1fdcdd96005254571c64902aeb1648');
             c.credentials.sharedEncryptingKey.should.equal('x3D/7QHa4PkKMbSXEvXwaw==');
-            status.wallet.zelers.length.should.equal(1);
-            status.wallet.zelers[0].name.should.equal('123');
+            status.wallet.copayers.length.should.equal(1);
+            status.wallet.copayers[0].name.should.equal('123');
             done();
           });
         });
@@ -4668,7 +4668,7 @@ describe('client API', function() {
     });
 
     it('Should to import the same wallet twice with different clients', function(done) {
-      var t = ImportData.zelers[0];
+      var t = ImportData.copayers[0];
       var c = helpers.newClient(app);
       c.createWalletFromOldCopay(t.username, t.password, t.ls['wallet::4d32f0737a05f072'], function(err) {
         should.not.exist(err);
@@ -4690,8 +4690,8 @@ describe('client API', function() {
       });
     });
 
-    it('Should not fail when importing the same wallet twice, same zeler', function(done) {
-      var t = ImportData.zelers[0];
+    it('Should not fail when importing the same wallet twice, same copayer', function(done) {
+      var t = ImportData.copayers[0];
       var c = helpers.newClient(app);
       c.createWalletFromOldCopay(t.username, t.password, t.ls['wallet::4d32f0737a05f072'], function(err) {
         should.not.exist(err);
@@ -4707,8 +4707,8 @@ describe('client API', function() {
       });
     });
 
-    it('Should import and complete 2-2 wallet from 2 zelers, and create addresses', function(done) {
-      var t = ImportData.zelers[0];
+    it('Should import and complete 2-2 wallet from 2 copayers, and create addresses', function(done) {
+      var t = ImportData.copayers[0];
       var c = helpers.newClient(app);
       c.createWalletFromOldCopay(t.username, t.password, t.ls['wallet::4d32f0737a05f072'], function(err) {
         should.not.exist(err);
@@ -4717,7 +4717,7 @@ describe('client API', function() {
           status.wallet.status.should.equal('complete');
           c.credentials.sharedEncryptingKey.should.equal('Ou2j4kq3z1w4yTr9YybVxg==');
 
-          var t2 = ImportData.zelers[1];
+          var t2 = ImportData.copayers[1];
           var c2 = helpers.newClient(app);
           c2.createWalletFromOldCopay(t2.username, t2.password, t2.ls['wallet::4d32f0737a05f072'], function(err) {
             should.not.exist(err);
@@ -4740,10 +4740,10 @@ describe('client API', function() {
       });
     });
 
-    it('Should import and complete 2-3 wallet from 2 zelers, and create addresses', function(done) {
+    it('Should import and complete 2-3 wallet from 2 copayers, and create addresses', function(done) {
       var w = 'wallet::7065a73486c8cb5d';
       var key = 'fS4HhoRd25KJY4VpNpO1jg==';
-      var t = ImportData.zelers[0];
+      var t = ImportData.copayers[0];
       var c = helpers.newClient(app);
       c.createWalletFromOldCopay(t.username, t.password, t.ls[w], function(err) {
         should.not.exist(err);
@@ -4752,7 +4752,7 @@ describe('client API', function() {
           status.wallet.status.should.equal('complete');
           c.credentials.sharedEncryptingKey.should.equal(key);
 
-          var t2 = ImportData.zelers[1];
+          var t2 = ImportData.copayers[1];
           var c2 = helpers.newClient(app);
           c2.createWalletFromOldCopay(t2.username, t2.password, t2.ls[w], function(err) {
             should.not.exist(err);
@@ -4762,7 +4762,7 @@ describe('client API', function() {
               should.not.exist(err);
               status.wallet.status.should.equal('complete');
 
-              var t3 = ImportData.zelers[2];
+              var t3 = ImportData.copayers[2];
               var c3 = helpers.newClient(app);
               c3.createWalletFromOldCopay(t3.username, t3.password, t3.ls[w], function(err) {
                 should.not.exist(err);
@@ -4781,14 +4781,14 @@ describe('client API', function() {
       });
     });
 
-    it('Should import a 2-3 wallet from 2 zelers, and recreate it, and then on the recreated other zelers should be able to access', function(done) {
+    it('Should import a 2-3 wallet from 2 copayers, and recreate it, and then on the recreated other copayers should be able to access', function(done) {
       var w = 'wallet::7065a73486c8cb5d';
       var key = 'fS4HhoRd25KJY4VpNpO1jg==';
-      var t = ImportData.zelers[0];
+      var t = ImportData.copayers[0];
       var c = helpers.newClient(app);
       c.createWalletFromOldCopay(t.username, t.password, t.ls[w], function(err) {
         should.not.exist(err);
-        var t2 = ImportData.zelers[1];
+        var t2 = ImportData.copayers[1];
         var c2 = helpers.newClient(app);
         c2.createWalletFromOldCopay(t2.username, t2.password, t2.ls[w], function(err) {
           should.not.exist(err);
@@ -4813,14 +4813,14 @@ describe('client API', function() {
             should.not.exist(err);
             recoveryClient.getStatus({}, function(err, status) {
               should.not.exist(err);
-              _.map(status.wallet.zelers, 'name').sort().should.deep.equal(['123', '234', '345']);
-              var t2 = ImportData.zelers[1];
+              _.map(status.wallet.copayers, 'name').sort().should.deep.equal(['123', '234', '345']);
+              var t2 = ImportData.copayers[1];
               var c2p = helpers.newClient(newApp);
               c2p.createWalletFromOldCopay(t2.username, t2.password, t2.ls[w], function(err) {
                 should.not.exist(err);
                 c2p.getStatus({}, function(err, status) {
                   should.not.exist(err);
-                  _.map(status.wallet.zelers, 'name').sort().should.deep.equal(['123', '234', '345']);
+                  _.map(status.wallet.copayers, 'name').sort().should.deep.equal(['123', '234', '345']);
                   done();
                 });
               });
@@ -4913,7 +4913,7 @@ describe('client API', function() {
     it('should export & import encrypted', function(done) {
       var walletId = c1.credentials.walletId;
       var walletName = c1.credentials.walletName;
-      var zelerName = c1.credentials.zelerName;
+      var copayerName = c1.credentials.copayerName;
       var exported = c1.export({});
       importedClient = helpers.newClient(app);
       importedClient.import(exported, {});
@@ -4921,7 +4921,7 @@ describe('client API', function() {
         should.not.exist(err);
         importedClient.credentials.walletId.should.equal(walletId);
         importedClient.credentials.walletName.should.equal(walletName);
-        importedClient.credentials.zelerName.should.equal(zelerName);
+        importedClient.credentials.copayerName.should.equal(copayerName);
         importedClient.isPrivKeyEncrypted().should.equal(true);
         importedClient.decryptPrivateKey(password);
         importedClient.isPrivKeyEncrypted().should.equal(false);
@@ -5036,7 +5036,7 @@ describe('client API', function() {
         });
       });
 
-      it('should add access with zeler name', function(done) {
+      it('should add access with copayer name', function(done) {
         var spy = sinon.spy(clients[0], '_doPutRequest');
         clients[0].addAccess({
           name: 'pepe',
@@ -5044,7 +5044,7 @@ describe('client API', function() {
           should.not.exist(err);
           var url = spy.getCall(0).args[0];
           var body = JSON.stringify(spy.getCall(0).args[1]);
-          url.should.contain('/zelers');
+          url.should.contain('/copayers');
           body.should.not.contain('pepe');
 
           var k = new Bitcore.PrivateKey(key);
@@ -5054,7 +5054,7 @@ describe('client API', function() {
 
           clients[0].getStatus({}, function(err, status) {
             should.not.exist(err);
-            var keys = status.wallet.zelers[0].requestPubKeys;
+            var keys = status.wallet.copayers[0].requestPubKeys;
             keys.length.should.equal(2);
             _.filter(keys, {
               name: 'pepe'
@@ -5160,10 +5160,10 @@ describe('client API', function() {
   });
 
   var addrMap = {
-    ZEL: ['1PuKMvRFfwbLXyEPXZzkGi111gMUCs6uE3','1GG3JQikGC7wxstyavUBDoCJ66bWLLENZC'],
+    zel: ['1PuKMvRFfwbLXyEPXZzkGi111gMUCs6uE3','1GG3JQikGC7wxstyavUBDoCJ66bWLLENZC'],
     bch: ['CfNCvxmKYzZsS78pDKKfrDd2doZt3w4jUs','CXivsT4p9F6Us1oQGfo6oJpKiDovJjRVUE']
   };
-  _.each(['bch', 'ZEL'], function(coin) {
+  _.each(['bch', 'zel'], function(coin) {
     var addr= addrMap[coin];
 
     describe('Sweep paper wallet ' + coin, function() {
@@ -5280,15 +5280,15 @@ describe('client API', function() {
         }],
         expected: '0.01',
       }, {
-        args: [1, 'ZEL'],
+        args: [1, 'zel'],
         expected: '0.00',
       }, {
-        args: [1, 'ZEL', {
+        args: [1, 'zel', {
           fullPrecision: true
         }],
         expected: '0.00000001',
       }, {
-        args: [1234567899999, 'ZEL', {
+        args: [1234567899999, 'zel', {
           thousandsSeparator: ' ',
           decimalSeparator: ','
         }],
@@ -5436,7 +5436,7 @@ describe('client API', function() {
           c2.personalEncryptingKey.should.equal(c.personalEncryptingKey);
           c2.walletId.should.equal(c.walletId);
           c2.walletName.should.equal(c.walletName);
-          c2.zelerName.should.equal(c.zelerName);
+          c2.copayerName.should.equal(c.copayerName);
           done();
         });
       });

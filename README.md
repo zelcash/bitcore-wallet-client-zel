@@ -45,7 +45,7 @@ client.createWallet("My Wallet", "Irene", 2, 2, {network: 'testnet'}, function(e
     return
   };
   // Handle err
-  console.log('Wallet Created. Share this secret with your zelers: ' + secret);
+  console.log('Wallet Created. Share this secret with your copayers: ' + secret);
   fs.writeFileSync('irene.dat', client.export());
 });
 ```
@@ -115,7 +115,7 @@ Create a new wallet with the first script:
 ```
 $ node irene.js
 info Generating new keys
- Wallet Created. Share this secret with your zelers: JbTDjtUkvWS4c3mgAtJf4zKyRGzdQzZacfx2S7gRqPLcbeAWaSDEnazFJF6mKbzBvY1ZRwZCbvT
+ Wallet Created. Share this secret with your copayers: JbTDjtUkvWS4c3mgAtJf4zKyRGzdQzZacfx2S7gRqPLcbeAWaSDEnazFJF6mKbzBvY1ZRwZCbvT
 ```
 
 Join to this wallet with generated secret:
@@ -411,7 +411,7 @@ Get service version
 **cb**: `Callback`, Get service version
 
 
-### API.createWallet(walletName, zelerName, m, n, opts, opts.network, opts.walletPrivKey, opts.id, opts.withMnemonics, cb)
+### API.createWallet(walletName, copayerName, m, n, opts, opts.network, opts.walletPrivKey, opts.id, opts.withMnemonics, cb)
 
 Create a wallet.
 
@@ -419,7 +419,7 @@ Create a wallet.
 
 **walletName**: `String`, Create a wallet.
 
-**zelerName**: `String`, Create a wallet.
+**copayerName**: `String`, Create a wallet.
 
 **m**: `Number`, Create a wallet.
 
@@ -439,7 +439,7 @@ Create a wallet.
 
 **Returns**: `undefined`
 
-### API.joinWallet(secret, zelerName, opts, opts.dryRun[, cb)
+### API.joinWallet(secret, copayerName, opts, opts.dryRun[, cb)
 
 Join an existent wallet
 
@@ -447,7 +447,7 @@ Join an existent wallet
 
 **secret**: `String`, Join an existent wallet
 
-**zelerName**: `String`, Join an existent wallet
+**copayerName**: `String`, Join an existent wallet
 
 **opts**: `Object`, Join an existent wallet
 
@@ -491,23 +491,23 @@ Get status of the wallet
 
 ### API.getPreferences(cb)
 
-Get zeler preferences
+Get copayer preferences
 
 **Parameters**
 
-**cb**: `Callback`, Get zeler preferences
+**cb**: `Callback`, Get copayer preferences
 
 **Returns**: `Callback`, cb - Return error or object
 
 ### API.savePreferences(preferences, cb)
 
-Save zeler preferences
+Save copayer preferences
 
 **Parameters**
 
-**preferences**: `Object`, Save zeler preferences
+**preferences**: `Object`, Save copayer preferences
 
-**cb**: `Callback`, Save zeler preferences
+**cb**: `Callback`, Save copayer preferences
 
 **Returns**: `Callback`, cb - Return error or object
 
@@ -760,17 +760,17 @@ getTx
 ### API.startScan(opts, opts.includeCopayerBranches, cb)
 
 Start an address scanning process.
-When finished, the scanning process will send a notification 'ScanFinished' to all zelers.
+When finished, the scanning process will send a notification 'ScanFinished' to all copayers.
 
 **Parameters**
 
 **opts**: `Object`, Start an address scanning process.
-When finished, the scanning process will send a notification 'ScanFinished' to all zelers.
+When finished, the scanning process will send a notification 'ScanFinished' to all copayers.
 
 **opts.includeCopayerBranches**: `Boolean`, (defaults to false)
 
 **cb**: `Callback`, Start an address scanning process.
-When finished, the scanning process will send a notification 'ScanFinished' to all zelers.
+When finished, the scanning process will send a notification 'ScanFinished' to all copayers.
 
 
 ### API.getFiatRate(opts, opts.code, opts.ts, opts.provider)
@@ -915,11 +915,11 @@ A simple logger that wraps the <tt>console.log</tt> methods when available.
 
 Usage:
 <pre>
-  log = new Logger('zel');
+  log = new Logger('copay');
   log.setLevel('info');
   log.debug('Message!'); // won't show
   log.setLevel('debug');
-  log.debug('Message!', 1); // will show '[debug] zel: Message!, 1'
+  log.debug('Message!', 1); // will show '[debug] copay: Message!, 1'
 </pre>
 
 ### Logger.setLevel(level)
@@ -1057,15 +1057,15 @@ Check address
 
 **Returns**: `Boolean`, true or false
 
-### Verifier.checkCopayers(credentials, zelers)
+### Verifier.checkCopayers(credentials, copayers)
 
-Check zelers
+Check copayers
 
 **Parameters**
 
-**credentials**: `function`, Check zelers
+**credentials**: `function`, Check copayers
 
-**zelers**: `Array`, Check zelers
+**copayers**: `Array`, Check copayers
 
 **Returns**: `Boolean`, true or false
 
@@ -1118,4 +1118,4 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
-# bitcore-wallet-client-zel
+# bitcore-wallet-client-btcz
