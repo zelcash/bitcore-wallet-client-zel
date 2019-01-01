@@ -2,7 +2,7 @@
   "name": "bitcore-wallet-client-zel",
   "description": "Client for bitcore-wallet-service-zel",
   "author": "Zelcash Foundation",
-  "version": "2.1.2",
+  "version": "2.1.1",
   "license": "MIT",
   "keywords": [
     "bitcoin",
