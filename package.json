@@ -2,7 +2,7 @@
   "name": "bitcore-wallet-client-zel",
   "description": "Client for bitcore-wallet-service-zel",
   "author": "Zelcash Foundation",
-  "version": "2.1.1",
+  "version": "2.1.2",
   "license": "MIT",
   "keywords": [
     "bitcoin",
@@ -29,6 +29,7 @@
     "bitcore-lib-zel": "git+https://github.com/zelcash/bitcore-lib-zel.git",
     "bitcore-mnemonic": "^1.2.2",
     "bitcore-payment-protocol": "^1.2.2",
+    "bitgo-utxo-lib": "^1.2.1",
     "json-stable-stringify": "^1.0.0",
     "lodash": "^4.17.4",
     "preconditions": "^1.0.8",
